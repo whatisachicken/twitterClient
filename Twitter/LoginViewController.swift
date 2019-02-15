@@ -14,9 +14,15 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
         
     }
+    override func viewDidAppear(_ animated: Bool) {
+        if UserDefaults.standard.bool(forKey: "userLoggedIn") == true {
+            self.performSegue(withIdentifier: "loginToHome", sender: self)
+        }
+    }
     @IBAction func onLoginClick(_ sender: Any) {
         let requestURL = "https://api.twitter.com/oauth/request_token"
         TwitterAPICaller.client?.login(url: requestURL, success: {
+            UserDefaults.standard.set(true, forKey: "userLoggedIn")
             self.performSegue(withIdentifier: "loginToHome", sender: self)
         }, failure: {(Error) in
             print("Couldn't login in!")
