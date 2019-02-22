@@ -19,6 +19,7 @@ class HomeTableViewController: UITableViewController {
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
     }
+    //Function to load tweets on first load
     @objc func loadTweets(){
         numOfTweets = 20
         let requestURL = "http://api.twitter.com/1.1/statuses/home_timeline.json"
