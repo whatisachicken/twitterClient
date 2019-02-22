@@ -10,9 +10,51 @@ import UIKit
 
 class HomeTableViewController: UITableViewController {
 
+    var tweetArray = [NSDictionary]()
+    var numOfTweets : Int!
+    let myRefreshControl = UIRefreshControl()
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        loadTweets()
+        myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
+        tableView.refreshControl = myRefreshControl
+    }
+    @objc func loadTweets(){
+        numOfTweets = 20
+        let requestURL = "http://api.twitter.com/1.1/statuses/home_timeline.json"
+        let myParams = ["count": numOfTweets]
+        TwitterAPICaller.client?.getDictionariesRequest(url: requestURL, parameters: myParams, success:
+            { (tweets: [NSDictionary]) in
+            self.tweetArray.removeAll()
+            for tweet in tweets {
+                self.tweetArray.append(tweet)
+        }
+            self.tableView.reloadData()
+            self.myRefreshControl.endRefreshing()
+        }, failure: {(Error) in
+            print("Couldn't find tweets")
+        })
+    }
+    func loadMoreTweets(){
+        let requestURL = "http://api.twitter.com/1.1/statuses/home_timeline.json"
+        let myParams = ["count": numOfTweets]
+        numOfTweets = numOfTweets + 20
+        TwitterAPICaller.client?.getDictionariesRequest(url: requestURL, parameters: myParams, success:
+            { (tweets: [NSDictionary]) in
+            self.tweetArray.removeAll()
+            for tweet in tweets {
+                self.tweetArray.append(tweet)
+            }
+            self.tableView.reloadData()
+            self.myRefreshControl.endRefreshing()
+        }, failure: {(Error) in
+            print("Couldn't find tweets")
+        })
+    }
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath){
+        if indexPath.row + 1 == tweetArray.count{
+            loadMoreTweets()
+        }
     }
     @IBAction func onLogout(_ sender: Any) {
         TwitterAPICaller.client?.logout()
@@ -22,10 +64,15 @@ class HomeTableViewController: UITableViewController {
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "tweetCell", for: indexPath) as! TweetCell
-        
-        cell.userNameLabel.text = "Some name"
-        cell.tweetLabel.text = "My tweet"
-        
+        let user = tweetArray[indexPath.row]["user"] as! NSDictionary
+        cell.userNameLabel.text = user["name"] as? String
+        cell.tweetLabel.text = tweetArray[indexPath.row]["text"] as? String
+        //Get image data
+        let imageURL = URL(string: (user["profile_image_url_https"] as? String)!)
+        let data = try? Data(contentsOf: imageURL!)
+        if let imageData = data {
+            cell.userProfileImage.image = UIImage(data: imageData)
+        }
         return cell
     }
     
@@ -34,7 +81,7 @@ class HomeTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 5
+        return tweetArray.count
     }
 
 
