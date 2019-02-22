@@ -14,11 +14,13 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
         
     }
+    //Called whenever view appears first time
     override func viewDidAppear(_ animated: Bool) {
         if UserDefaults.standard.bool(forKey: "userLoggedIn") == true {
             self.performSegue(withIdentifier: "loginToHome", sender: self)
         }
     }
+    //Called whenever login is clicked
     @IBAction func onLoginClick(_ sender: Any) {
         let requestURL = "https://api.twitter.com/oauth/request_token"
         TwitterAPICaller.client?.login(url: requestURL, success: {
