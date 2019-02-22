@@ -13,11 +13,17 @@ class HomeTableViewController: UITableViewController {
     var tweetArray = [NSDictionary]()
     var numOfTweets : Int!
     let myRefreshControl = UIRefreshControl()
+    //Call whenever view loads first time
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadTweets()
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
+    }
+    //Called whenever view appears
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        //Call function to load tweets
+        self.loadTweets()
     }
     //Function to load tweets on first load
     @objc func loadTweets(){
